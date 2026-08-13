@@ -1,0 +1,37 @@
+name: Build iOS Simulator
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build CallsFortestal for iOS Simulator
+        run: |
+          xcodebuild \
+            -project CallsFortestal.xcodeproj \
+            -scheme CallsFortestal \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package app
+        run: |
+          cd build/Build/Products/Debug-iphonesimulator
+          zip -r ../../../../CallsFortestal-Simulator.zip CallsFortestal.app
+
+      - name: Upload simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: CallsFortestal-Simulator
+          path: CallsFortestal-Simulator.zip
